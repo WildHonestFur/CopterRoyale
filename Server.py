@@ -1,12 +1,12 @@
 import socket
 from threading import Thread
 
-HOST_IP = "192.168.109.1"
+HOST_IP = "IP_ADDRESS"
 HOST_PORT = 1234
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((HOST_IP, HOST_PORT))
 
-players = {1: ('192.168.109.1', 1234)}
+players = {1: ('IP_ADDRESS', 1234)}
 left = len(players)
 info = []
 num = {1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5:'fifth', 6:'sixth', 7:'seventh', 8:'eighth', 9:'ninth', 10:'tenth'}
