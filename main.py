@@ -33,14 +33,14 @@ power = 'invisibility'
 select = 1
 powers = {'speed': (800, 500), 'invisibility': (900, 400), 'turret': (800, 500), 'teleport': (500, 1)}
 ptime = 0
-name = 'TEST'
+name = ''
 use_power = [False, 0]
 state = 'start'
 win = ['Well played, champion! Victory achieved!', 'Incredible! You’re the ultimate winner!',
        'Victory is yours! Enjoy the glory!', 'Amazing! You’ve earned this victory!']
 choice = random.choice(win)
-end = 'You were popped by player 3'
-place = 'first'
+end = ''
+place = ''
 
 gamedata = []
 
