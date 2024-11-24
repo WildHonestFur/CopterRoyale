@@ -35,7 +35,7 @@ powers = {'speed': (800, 500), 'invisibility': (900, 400), 'turret': (800, 500),
 ptime = 0
 name = 'TEST'
 use_power = [False, 0]
-state = 'game'
+state = 'start'
 win = ['Well played, champion! Victory achieved!', 'Incredible! You’re the ultimate winner!',
        'Victory is yours! Enjoy the glory!', 'Amazing! You’ve earned this victory!']
 choice = random.choice(win)
