@@ -44,11 +44,11 @@ place = 'first'
 
 gamedata = []
 
-HOST_IP = "192.168.109.1"
+HOST_IP = "IP_ADDRESS"
 HOST_PORT = 1234
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-SELF_IP = '192.168.109.1'
+SELF_IP = 'IP_ADDRESS'
 SELF_PORT = 1234
 sock.bind((SELF_IP, SELF_PORT))
 
