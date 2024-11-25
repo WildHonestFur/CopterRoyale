@@ -1,5 +1,6 @@
 import random
 import time
+import zlib
 import pygame
 import math
 import socket
@@ -17,8 +18,8 @@ img = pygame.transform.scale(img, (200, 200))
 
 # To change
 code = 1
-tx = 0
-ty = 0
+tx = 600
+ty = -600
 color = (250, 0, 0)
 color2 = (200, 50, 50)
 
@@ -44,11 +45,11 @@ place = ''
 
 gamedata = []
 
-HOST_IP = "IP_ADDRESS"
+HOST_IP = "192.168.15.167"
 HOST_PORT = 1234
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-SELF_IP = 'IP_ADDRESS'
+SELF_IP = '192.168.15.168'
 SELF_PORT = 1234
 sock.bind((SELF_IP, SELF_PORT))
 
@@ -65,7 +66,8 @@ def fix(s):
 def listen():
     global state, end, place, gamedata
     while run:
-        info, address = sock.recvfrom(1024)
+        info, address = sock.recvfrom(2048)
+        info = zlib.decompress(info)
         info = info.decode('utf-8')
         if info[:5] == 'DEATH':
             end, place = info[5:].split('=')
@@ -224,7 +226,8 @@ while run:
         surface = pygame.Surface((130, 130), pygame.SRCALPHA)
         surface.fill((0, 0, 0, 180))
         for p in gamedata:
-            pygame.draw.circle(surface, p[4], (65+p[1][0]/size*130, 65+p[1][0]/size*130), 3)
+            if not p[3]:
+                pygame.draw.circle(surface, p[4], (65+p[1][0]/size*130, 65+p[1][1]/size*130), 3)
         pygame.draw.circle(surface, color, (65 + tx / size * 130, 65 + ty / size * 130), 3)
         screen.blit(surface, (750, 550))
         game.blit(screen, (0, 0))
@@ -394,6 +397,5 @@ while run:
         textRect.center = (450, 350)
         screen.blit(text, textRect)
         game.blit(screen, (0, 0))
-
     pygame.display.flip()
     clock.tick(60)
