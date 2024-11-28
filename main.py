@@ -14,18 +14,18 @@ font2 = pygame.font.Font('freesansbold.ttf', 30)
 font3 = pygame.font.Font('freesansbold.ttf', 45)
 img = pygame.image.load('trophy.png')
 img = pygame.transform.scale(img, (200, 200))
+colors = [(207, 23, 23), (6, 47, 196), (8, 161, 54), (201, 114, 26), (163, 148, 34), (38, 153, 171), (181, 27, 117), (92, 11, 191), (120, 120, 120), (94, 55, 16)]
 one, two, three = [pygame.transform.scale(pygame.image.load(f'{n}.png'), (200, 200)) for n in ['one', 'two', 'three']]
 
 # Change for player
 code = 1
-SELF_IP = '192.168.1.4'
-origx = 600
-origy = 600
-color = (250, 0, 0)
-color2 = (200, 50, 50)
+origx = 2000
+origy = 2000
+color = colors[code-1]
+color2 = (0, 0, 0)
 
 speed = 1.5
-size = 1225
+size = 4000
 darts = []
 since = 2
 tx = origx
@@ -54,6 +54,7 @@ HOST_IP = "192.168.15.167"
 HOST_PORT = 1234
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+SELF_IP = socket.gethostbyname(socket.gethostname())
 SELF_PORT = 1234
 sock.bind((SELF_IP, SELF_PORT))
 
@@ -70,7 +71,7 @@ def fix(s):
 def listen():
     global state, end, place, gamedata, started, darts
     while run:
-        info, address = sock.recvfrom(2048)
+        info, address = sock.recvfrom(4096)
         info = zlib.decompress(info)
         info = info.decode('utf-8')
         if info[:5] == 'DEATH':
@@ -102,12 +103,16 @@ def draw_rectangle(s, x, y, width, height, c, t_x, t_y, rotation):
     pygame.draw.polygon(s, c, points)
 
 
-def draw_player(pos, a, c):
+def draw_player(pos, a, c, name):
     cos0 = -math.cos(a)
     sin0 = -math.sin(a)
     pygame.draw.circle(screen, c, (450 - tx + pos[0], 350 - ty + pos[1]), 15)
     draw_rectangle(screen, 450 - tx + pos[0], 350 - ty + pos[1], 20, 10, c, -cos0 * 10, sin0 * 10,
                    -math.asin(sin0) + (2 * math.asin(sin0) + math.pi) * (cos0 > 0))
+    text = font.render(name, True, color2)
+    textRect = text.get_rect()
+    textRect.center = (450 - tx + pos[0], 350 - ty + pos[1]-30)
+    screen.blit(text, textRect)
 
 
 listening = Thread(target=listen)
@@ -213,7 +218,7 @@ while run:
             ptime = 0
         for p in gamedata:
             if not p[3]:
-                draw_player(p[1], p[2], p[4])
+                draw_player(p[1], p[2], p[4], p[0])
             for d in p[5]:
                 pygame.draw.circle(screen, p[4] + d[1], (450 - tx + d[0][0], 350 - ty + d[0][1]), 5)
 
@@ -251,6 +256,7 @@ while run:
         screen.blit(surface, (750, 550))
         if started == 150:
             sock.sendto(bytes('STARTED', 'utf-8'), (HOST_IP, HOST_PORT))
+            started += 1
         if started >= 150:
             since += 0.1
             ptime += 1 * (ptime < powers[power][0])
