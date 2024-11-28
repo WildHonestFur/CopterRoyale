@@ -34,12 +34,14 @@ while True:
     data = data.decode('utf-8')
     if len(info) <= 1 and started:
         try:
-            if int(info[0][6]) not in dead:
-                 to_send = 'WIN'.encode('utf-8')
-                 to_send = zlib.compress(to_send)
-                 sock.sendto(to_send, players[int(info[0][6])])
+            if players[int(info[0][6])] not in dead:
+                to_send = 'WIN'.encode('utf-8')
+                to_send = zlib.compress(to_send)
+                sock.sendto(to_send, players[int(info[0][6])])
         except IndexError:
             pass
+        info = []
+        dead = []
         started = False
     if data[:5] == 'DEATH':
         stuff = data[5:].split('=')
@@ -60,7 +62,10 @@ while True:
             info = new_info[:]
             dead.append(int(p2[1]))
             dead.append(int(p1[1]))
-
+            for p in players:
+                to_send = ('M' + f'{p1[0]} and {p2[0]} crashed').encode('utf-8')
+                to_send = zlib.compress(to_send)
+                sock.sendto(to_send, players[p])
         elif stuff[-1] == 'kill':
             left -= 1
             to_send = f'DEATHYou were popped by {p1[0]}={num[left + 1]}'.encode('utf-8')
@@ -72,10 +77,12 @@ while True:
                     new_info.append(i)
             info = new_info[:]
             dead.append(int(p2[1]))
+            for p in players:
+                to_send = ('M' + f'{p1[0]} popped {p2[0]}').encode('utf-8')
+                to_send = zlib.compress(to_send)
+                sock.sendto(to_send, players[p])
     elif data == 'STARTED':
         started = True
-        dead = []
-        info = []
         left = len(info)
     else:
         stuff = eval(data)
