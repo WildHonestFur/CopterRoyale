@@ -34,13 +34,13 @@ while True:
     data = data.decode('utf-8')
     if len(info) <= 1 and started:
         try:
-            to_send = 'WIN'.encode('utf-8')
-            to_send = zlib.compress(to_send)
-            sock.sendto(to_send, players[int(info[0][6])])
+            if int(info[0][6]) not in dead:
+                 to_send = 'WIN'.encode('utf-8')
+                 to_send = zlib.compress(to_send)
+                 sock.sendto(to_send, players[int(info[0][6])])
         except IndexError:
             pass
         info = []
-        dead = []
         started = False
     if data[:5] == 'DEATH':
         stuff = data[5:].split('=')
@@ -75,6 +75,7 @@ while True:
             dead.append(int(p2[1]))
     elif data == 'STARTED':
         started = True
+        dead = []
         left = len(info)
     else:
         stuff = eval(data)
