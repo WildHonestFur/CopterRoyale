@@ -40,7 +40,6 @@ while True:
                  sock.sendto(to_send, players[int(info[0][6])])
         except IndexError:
             pass
-        info = []
         started = False
     if data[:5] == 'DEATH':
         stuff = data[5:].split('=')
@@ -76,6 +75,7 @@ while True:
     elif data == 'STARTED':
         started = True
         dead = []
+        info = []
         left = len(info)
     else:
         stuff = eval(data)
