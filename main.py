@@ -196,7 +196,7 @@ while run:
             if use_power[0] and power == 'rapid':
                 gap = 1
             elif use_power[0] and power == 'sniper':
-                gap = 5
+                gap = 4
             if pygame.mouse.get_pressed(3)[0] and since > gap:
                 darts.append(
                     [[tx - 20 * cos, ty + 20 * sin], (255,),
