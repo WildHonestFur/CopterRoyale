@@ -9,7 +9,7 @@ from threading import Thread
 pygame.init()
 clock = pygame.time.Clock()
 infoObject = pygame.display.Info()
-game = pygame.display.set_mode((infoObject.current_w, infoObject.current_h - 50))
+game = pygame.display.set_mode((infoObject.current_w, infoObject.current_h))
 w, h = pygame.display.get_surface().get_size()
 font = pygame.font.Font('freesansbold.ttf', 15)
 font2 = pygame.font.Font('freesansbold.ttf', 30)
@@ -38,8 +38,8 @@ run = True
 invis = False
 power = 'invisibility'
 select = 1
-powers = {'homing': (800, 550), 'speed': (800, 500), 'invisibility': (900, w / 2), 'rapid': (650, h / 2),
-          'teleport': (500, 1)}
+powers = {'homing': (800, 550), 'speed': (800, 500), 'invisibility': (900, 450), 'rapid': (650, 500),
+          'teleport': (500, 1), 'sniper': (1200, 400)}
 ptime = 0
 name = ''
 use_power = [False, 0]
@@ -54,6 +54,8 @@ started = 0
 last_time = 0
 shrinking = False
 scount = 0
+scale_factor = 1
+sin, cos = 0, 0
 
 gamedata = []
 
@@ -101,39 +103,48 @@ def listen():
 
 
 def draw_rectangle(s, x, y, width, height, c, t_x, t_y, rotation):
-    points = []
+    pts = []
     radius = math.sqrt((height / 2) ** 2 + (width / 2) ** 2)
     angle = math.atan2(height / 2, width / 2)
     angles = [angle, -angle + math.pi, angle + math.pi, -angle]
     rot_radians = rotation
     for angle in angles:
-        y_offset = -1 * radius * math.sin(angle + rot_radians)
-        x_offset = radius * math.cos(angle + rot_radians)
-        points.append((x + x_offset + t_x, y + y_offset + t_y))
-    pygame.draw.polygon(s, c, points)
+        y_off = -1 * radius * math.sin(angle + rot_radians)
+        x_off = radius * math.cos(angle + rot_radians)
+        pts.append((x + x_off + t_x, y + y_off + t_y))
+    pygame.draw.polygon(s, c, pts)
 
 
-def draw_player(pos, a, c, name):
+def draw_player(pos, a, c, n):
     cos0 = -math.cos(a)
     sin0 = -math.sin(a)
-    pygame.draw.circle(screen, c, (w / 2 - tx + pos[0], h / 2 - ty + pos[1]), 15)
-    draw_rectangle(screen, w / 2 - tx + pos[0], h / 2 - ty + pos[1], 20, 10, c, -cos0 * 10, sin0 * 10,
+    pygame.draw.circle(screen, c, (
+        w / 2 - tx * scale_factor + pos[0] * scale_factor, h / 2 - ty * scale_factor + pos[1] * scale_factor),
+                       15 * scale_factor)
+    draw_rectangle(screen, w / 2 - tx * scale_factor + pos[0] * scale_factor,
+                   h / 2 - ty * scale_factor + pos[1] * scale_factor, 20 * scale_factor, 10 * scale_factor, c,
+                   -cos0 * 10 * scale_factor, sin0 * 10 * scale_factor,
                    -math.asin(sin0) + (2 * math.asin(sin0) + math.pi) * (cos0 > 0))
-    text = font.render(name, True, color2)
-    textRect = text.get_rect()
-    textRect.center = (w / 2 - tx + pos[0], h / 2 - ty + pos[1] - 30)
-    screen.blit(text, textRect)
+    txt = font.render(n, True, color2)
+    txtRect = txt.get_rect()
+    txtRect.center = (w / 2 - tx * scale_factor + pos[0] * scale_factor,
+                      h / 2 - ty * scale_factor + pos[1] * scale_factor - 30 * scale_factor)
+    screen.blit(txt, txtRect)
 
 
 listening = Thread(target=listen)
 listening.start()
 
 while run:
+    w, h = pygame.display.get_surface().get_size()
     if state == 'game':
         mx, my = pygame.mouse.get_pos()
         hyp = math.dist((mx, my), (w / 2, h / 2))
-        cos = round((w / 2 - mx) / hyp, 2)
-        sin = round((my - h / 2) / hyp, 2)
+        try:
+            cos = round((w / 2 - mx) / hyp, 2)
+            sin = round((my - h / 2) / hyp, 2)
+        except ZeroDivisionError:
+            pass
         screen = pygame.Surface(game.get_size(), pygame.SRCALPHA)
         game.fill((255, 255, 255))
         if time.time() / 30 > last_time + 1 and size > 500:
@@ -142,6 +153,8 @@ while run:
         if shrinking:
             size -= 1
             scount += 1
+            if ['Map shrinking', 1] not in messages:
+                messages.insert(0, ['Map Shrinking', 1])
         if scount >= 500:
             shrinking = False
             last_time = time.time() / 30
@@ -181,44 +194,65 @@ while run:
             rl_ud = [False, False]
             gap = 2.5
             if use_power[0] and power == 'rapid':
-                gap = 1.2
+                gap = 1
+            elif use_power[0] and power == 'sniper':
+                gap = 5
             if pygame.mouse.get_pressed(3)[0] and since > gap:
                 darts.append(
                     [[tx - 20 * cos, ty + 20 * sin], (255,),
                      -math.asin(sin) + (2 * math.asin(sin) + math.pi) * (cos > 0),
-                     0])
+                     0, use_power[0] and power == 'sniper'])
                 since = 0
 
         screen.fill((121, 135, 130), pygame.Rect(0, 0, w, h))
         pygame.draw.polygon(screen, (188, 204, 198),
-                            [(w / 2 - tx - size / 2, h / 2 - ty - size / 2),
-                             (w / 2 - tx - size / 2, h / 2 - ty + size / 2),
-                             (w / 2 - tx + size / 2, h / 2 - ty + size / 2),
-                             (w / 2 - tx + size / 2, h / 2 - ty - size / 2)])
+                            [(w / 2 - tx * scale_factor - size * scale_factor / 2,
+                              h / 2 - ty * scale_factor - size * scale_factor / 2),
+                             (w / 2 - tx * scale_factor - size * scale_factor / 2,
+                              h / 2 - ty * scale_factor + size * scale_factor / 2),
+                             (w / 2 - tx * scale_factor + size * scale_factor / 2,
+                              h / 2 - ty * scale_factor + size * scale_factor / 2),
+                             (w / 2 - tx * scale_factor + size * scale_factor / 2,
+                              h / 2 - ty * scale_factor - size * scale_factor / 2)])
         for val in range(5000 // 25 + 1):
-            pygame.draw.line(screen, (204, 216, 211), (w / 2 - tx - 5000 / 2, h / 2 - ty + 25 * val - 5000 / 2),
-                             (w / 2 - tx + 5000 / 2, h / 2 - ty + 25 * val - 5000 / 2), 2)
-            pygame.draw.line(screen, (204, 216, 211), (w / 2 - tx + 25 * val - 5000 / 2, h / 2 - ty - 5000 / 2),
-                             (w / 2 - tx + 25 * val - 5000 / 2, h / 2 - ty + 5000 / 2), 2)
+            pygame.draw.line(screen, (204, 216, 211), (w / 2 - tx * scale_factor - 5000 * scale_factor / 2,
+                                                       h / 2 - ty * scale_factor + 25 * val * scale_factor - 5000 / 2 * scale_factor),
+                             (w / 2 - tx * scale_factor + 5000 * scale_factor / 2,
+                              h / 2 - ty * scale_factor + 25 * val * scale_factor - 5000 * scale_factor / 2), 2)
+            pygame.draw.line(screen, (204, 216, 211), (
+                w / 2 - tx * scale_factor + 25 * val * scale_factor - 5000 * scale_factor / 2,
+                h / 2 - ty * scale_factor - 5000 * scale_factor / 2),
+                             (w / 2 - tx * scale_factor + 25 * val * scale_factor - 5000 * scale_factor / 2,
+                              h / 2 - ty * scale_factor + 5000 * scale_factor / 2), 2)
 
-        screen.fill((121, 135, 130), pygame.Rect(0, 0, w, h / 2 - ty - size / 2))
-        screen.fill((121, 135, 130), pygame.Rect(0, 0, w / 2 - tx - size / 2, h))
-        screen.fill((121, 135, 130), pygame.Rect(w / 2 - tx + size / 2, 0, w / 2 + tx - size / 2, h))
-        screen.fill((121, 135, 130), pygame.Rect(0, h / 2 - ty + size / 2, w, h / 2 + ty - size / 2))
-
+        screen.fill((121, 135, 130), pygame.Rect(0, 0, w, h / 2 - ty * scale_factor - size * scale_factor / 2))
+        screen.fill((121, 135, 130), pygame.Rect(0, 0, w / 2 - tx * scale_factor - size * scale_factor / 2, h))
+        screen.fill((121, 135, 130), pygame.Rect(w / 2 - tx * scale_factor + size * scale_factor / 2, 0,
+                                                 w / 2 + tx * scale_factor - size * scale_factor / 2, h))
+        screen.fill((121, 135, 130), pygame.Rect(0, h / 2 - ty * scale_factor + size * scale_factor / 2, w,
+                                                 h / 2 + ty * scale_factor - size * scale_factor / 2))
+        points = [
+            (w / 2 - tx * scale_factor - size * scale_factor / 2, h / 2 - ty * scale_factor - size * scale_factor / 2),
+            (w / 2 - tx * scale_factor - size * scale_factor / 2, h / 2 - ty * scale_factor + size * scale_factor / 2),
+            (w / 2 - tx * scale_factor + size * scale_factor / 2, h / 2 - ty * scale_factor + size * scale_factor / 2),
+            (w / 2 - tx * scale_factor + size * scale_factor / 2, h / 2 - ty * scale_factor - size * scale_factor / 2)]
+        for j in range(len(points)):
+            pygame.draw.line(screen, (0, 0, 0), points[j - 1], points[j], 3)
         for d in darts:
-            pygame.draw.circle(screen, color + d[1], (w / 2 - tx + d[0][0], h / 2 - ty + d[0][1]), 5)
+            pygame.draw.circle(screen, color + d[1], (
+                w / 2 - tx * scale_factor + d[0][0] * scale_factor, h / 2 - ty * scale_factor + d[0][1] * scale_factor),
+                               5 * scale_factor)
         for d in range(len(darts)):
             darts[d][3] += 1
-            if darts[d][3] > 80 + 20 * (use_power[0] and power == 'homing') and darts[d][1][0] >= 30:
+            if darts[d][3] > 80 + 20 * (use_power[0] and (power == 'homing' or power == 'rapid')) + 50 * darts[d][4] and darts[d][1][0] >= 30:
                 darts[d][1] = (darts[d][1][0] - 30,)
             if use_power[0] and power == 'homing':
                 hp = math.dist(((mx + tx - w / 2), (my + ty - h / 2)), (darts[d][0][0], darts[d][0][1]))
                 darts[d][0][0] += 3.6 * ((mx + tx - w / 2) - darts[d][0][0]) / hp
                 darts[d][0][1] -= -3.6 * ((my + ty - h / 2) - darts[d][0][1]) / hp
             else:
-                darts[d][0][0] += math.cos(darts[d][2]) * 3.6
-                darts[d][0][1] -= math.sin(darts[d][2]) * 3.6
+                darts[d][0][0] += math.cos(darts[d][2]) * (3.6 + 1.4 * darts[d][4])
+                darts[d][0][1] -= math.sin(darts[d][2]) * (3.6 + 1.4 * darts[d][4])
         newdarts = []
         for d in darts:
             if d[1][0] >= 30 and (
@@ -248,16 +282,22 @@ while run:
                     use_power = [False, 0]
             elif power == 'invisibility':
                 invis = True
+            elif power == 'sniper':
+                scale_factor = 4 / 5
 
         if use_power[0] and use_power[1] > powers[power][1]:
             use_power = [False, 0]
             invis = False
             ptime = 0
+            scale_factor = 1
         for p in gamedata:
             if not p[3]:
                 draw_player(p[1], p[2], p[4], p[0])
             for d in p[5]:
-                pygame.draw.circle(screen, p[4] + d[1], (w / 2 - tx + d[0][0], h / 2 - ty + d[0][1]), 5)
+                pygame.draw.circle(screen, p[4] + d[1], (
+                    w / 2 - tx * scale_factor + d[0][0] * scale_factor,
+                    h / 2 - ty * scale_factor + d[0][1] * scale_factor),
+                                   5 * scale_factor)
 
         for p in gamedata:
             if math.dist((tx, ty), p[1]) < 30:
@@ -266,8 +306,9 @@ while run:
                 if math.dist(d[0], (tx, ty)) < 20:
                     sock.sendto(bytes(f'DEATH{p[0]}+{p[6]}={name}+{code}=kill', 'utf-8'), (HOST_IP, HOST_PORT))
 
-        pygame.draw.circle(screen, color * (not invis) + color2 * invis, (w / 2, h / 2), 15)
-        draw_rectangle(screen, w / 2, h / 2, 20, 10, color * (not invis) + color2 * invis, -cos * 10, sin * 10,
+        pygame.draw.circle(screen, color * (not invis) + color2 * invis, (w / 2, h / 2), 15 * scale_factor)
+        draw_rectangle(screen, w / 2, h / 2, 20 * scale_factor, 10 * scale_factor, color * (not invis) + color2 * invis,
+                       -cos * 10 * scale_factor, sin * 10 * scale_factor,
                        -math.asin(sin) + (2 * math.asin(sin) + math.pi) * (cos > 0))
         screen.fill((0, 0, 0), pygame.Rect(w / 2 - 100, h - 50, 200, 15))
         if not use_power[0]:
@@ -310,9 +351,12 @@ while run:
             surface = pygame.Surface((340, 40), pygame.SRCALPHA)
             surface.fill((255, 255, 255, 130))
             screen.blit(surface, (w - 340 - 15, 15 + m * 50))
-            text = font.render(messages[m][0], True, color2)
+            if messages[m][0] == 'Map Shrinking':
+                text = font.render(messages[m][0], True, color)
+            else:
+                text = font.render(messages[m][0], True, color2)
             textRect = text.get_rect()
-            textRect.center = (w - 340 - 15 + 170, 15 + m * 60 + 20)
+            textRect.center = (w - 340 - 15 + 170, 15 + m * 50 + 20)
             screen.blit(text, textRect)
 
         new_messages = []
@@ -321,7 +365,6 @@ while run:
             if messages[m][1] > 0:
                 new_messages.append(messages[m])
         messages = new_messages[:]
-
         game.blit(screen, (0, 0))
         if use_power[0]:
             use_power[1] += 1
@@ -355,17 +398,17 @@ while run:
         else:
             text = font2.render(choice, True, (0, 0, 0))
         textRect = text.get_rect()
-        textRect.center = (w / 2, 120)
+        textRect.center = (w / 2, 120 - 350 + h / 2)
         screen.blit(text, textRect)
         text = font2.render(f'You got {place} place', True, color)
         textRect = text.get_rect()
-        textRect.center = (w / 2, 200)
+        textRect.center = (w / 2, 200 - 350 + h / 2)
         screen.blit(text, textRect)
         if w / 2 - 130 < mx < w / 2 + 130 and h / 2 + 170 < my < h / 2 + 250:
             pygame.draw.rect(screen, (171, 171, 171), pygame.Rect(w / 2 - 130, h / 2 + 170, 260, 80))
         else:
             pygame.draw.rect(screen, color, pygame.Rect(w / 2 - 130, h / 2 + 170, 260, 80))
-        screen.blit(img, (h / 2, 270 - 350 + h / 2))
+        screen.blit(img, (w / 2 - 100, 270 - 350 + h / 2))
         text = font2.render('New Game', True, (0, 0, 0))
         textRect = text.get_rect()
         textRect.center = (w / 2, 560 - 350 + h / 2)
@@ -470,6 +513,11 @@ while run:
         else:
             pygame.draw.rect(screen, color, pygame.Rect(430 + x_offset, 405 + y_offset, 150, 30))
             power = 'rapid'
+        if select != 6:
+            pygame.draw.rect(screen, (171, 171, 171), pygame.Rect(610 + x_offset, 405 + y_offset, 150, 30))
+        else:
+            pygame.draw.rect(screen, color, pygame.Rect(610 + x_offset, 405 + y_offset, 150, 30))
+            power = 'sniper'
         text = font.render('Invisibility', True, (0, 0, 0))
         textRect = text.get_rect()
         textRect.center = (325 + x_offset, 370 + y_offset)
@@ -490,6 +538,10 @@ while run:
         textRect = text.get_rect()
         textRect.center = (505 + x_offset, 420 + y_offset)
         screen.blit(text, textRect)
+        text = font.render('Sniper', True, (0, 0, 0))
+        textRect = text.get_rect()
+        textRect.center = (685 + x_offset, 420 + y_offset)
+        screen.blit(text, textRect)
         if pygame.mouse.get_pressed(3)[0]:
             if 320 + x_offset < mx < 580 + x_offset and 520 + y_offset < my < 600 + y_offset:
                 state = 'wait'
@@ -504,6 +556,8 @@ while run:
                 select = 4
             if 430 + x_offset < mx < 580 + x_offset and 405 + y_offset < my < 435 + y_offset:
                 select = 5
+            if 610 + x_offset < mx < 760 + x_offset and 405 + y_offset < my < 435 + y_offset:
+                select = 6
         game.blit(screen, (0, 0))
     elif state == 'wait':
         mx, my = pygame.mouse.get_pos()
