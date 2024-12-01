@@ -19,6 +19,7 @@ img = pygame.transform.scale(img, (200, 200))
 colors = [(207, 23, 23), (6, 47, 196), (8, 161, 54), (201, 114, 26), (163, 148, 34), (38, 153, 171), (181, 27, 117),
           (92, 11, 191), (120, 120, 120), (94, 55, 16)]
 one, two, three = [pygame.transform.scale(pygame.image.load(f'{n}.png'), (200, 200)) for n in ['one', 'two', 'three']]
+pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
 # Change for player
 code = 1
