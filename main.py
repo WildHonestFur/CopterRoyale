@@ -56,6 +56,7 @@ shrinking = False
 scount = 0
 scale_factor = 1
 sin, cos = 0, 0
+unscale = True
 
 gamedata = []
 
@@ -95,7 +96,7 @@ def listen():
         elif info == 'START' and state == 'wait':
             state = 'game'
             started = 0
-            scount = 500
+            scount = 900
             gamedata = []
             darts = []
         elif info[:1] == 'M':
@@ -155,7 +156,7 @@ while run:
             scount += 1
             if ['Map shrinking', 1] not in messages:
                 messages.insert(0, ['Map Shrinking', 1])
-        if scount >= 500:
+        if scount >= 900:
             shrinking = False
             last_time = time.time() / 30
             scount = 0
@@ -251,8 +252,8 @@ while run:
                 darts[d][0][0] += 3.6 * ((mx + tx - w / 2) - darts[d][0][0]) / hp
                 darts[d][0][1] -= -3.6 * ((my + ty - h / 2) - darts[d][0][1]) / hp
             else:
-                darts[d][0][0] += math.cos(darts[d][2]) * (3.6 + 1.4 * darts[d][4])
-                darts[d][0][1] -= math.sin(darts[d][2]) * (3.6 + 1.4 * darts[d][4])
+                darts[d][0][0] += math.cos(darts[d][2]) * (3.6 + 1.6 * darts[d][4])
+                darts[d][0][1] -= math.sin(darts[d][2]) * (3.6 + 1.6 * darts[d][4])
         newdarts = []
         for d in darts:
             if d[1][0] >= 30 and (
@@ -283,13 +284,17 @@ while run:
             elif power == 'invisibility':
                 invis = True
             elif power == 'sniper':
-                scale_factor = 4 / 5
+                unscale = False
+                if scale_factor > 0.8:
+                    scale_factor -= 0.01
 
         if use_power[0] and use_power[1] > powers[power][1]:
             use_power = [False, 0]
             invis = False
             ptime = 0
-            scale_factor = 1
+            unscale = True
+        if unscale and scale_factor < 1:
+            scale_factor += 0.01
         for p in gamedata:
             if not p[3]:
                 draw_player(p[1], p[2], p[4], p[0])
