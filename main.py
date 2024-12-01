@@ -60,7 +60,7 @@ unscale = True
 
 gamedata = []
 
-HOST_IP = "192.168.109.1"
+HOST_IP = "192.168.15.167"
 HOST_PORT = 1234
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -81,10 +81,9 @@ def fix(s):
 def listen():
     global state, end, place, gamedata, started, darts, scount, messages
     while run:
-        """info, address = sock.recvfrom(4096)
+        info, address = sock.recvfrom(4096)
         info = zlib.decompress(info)
-        info = info.decode('utf-8')"""
-        info = input()
+        info = info.decode('utf-8')
         if info[:5] == 'DEATH':
             end, place = info[5:].split('=')
             state = 'end'
