@@ -29,7 +29,8 @@ origy = 2000
 color = colors[code - 1]
 color2 = (0, 0, 0)
 speed = 1.5
-size = 5000
+orig_size = 5000
+size = orig_size
 darts = []
 since = 2
 tx = origx
@@ -217,16 +218,16 @@ while run:
                               h / 2 - ty * scale_factor + size * scale_factor / 2),
                              (w / 2 - tx * scale_factor + size * scale_factor / 2,
                               h / 2 - ty * scale_factor - size * scale_factor / 2)])
-        for val in range(5000 // 25 + 1):
-            pygame.draw.line(screen, (204, 216, 211), (w / 2 - tx * scale_factor - 5000 * scale_factor / 2,
-                                                       h / 2 - ty * scale_factor + 25 * val * scale_factor - 5000 / 2 * scale_factor),
-                             (w / 2 - tx * scale_factor + 5000 * scale_factor / 2,
-                              h / 2 - ty * scale_factor + 25 * val * scale_factor - 5000 * scale_factor / 2), 2)
+        for val in range(orig_size // 25 + 1):
+            pygame.draw.line(screen, (204, 216, 211), (w / 2 - tx * scale_factor - orig_size * scale_factor / 2,
+                                                       h / 2 - ty * scale_factor + 25 * val * scale_factor - orig_size / 2 * scale_factor),
+                             (w / 2 - tx * scale_factor + orig_size * scale_factor / 2,
+                              h / 2 - ty * scale_factor + 25 * val * scale_factor - orig_size * scale_factor / 2), 2)
             pygame.draw.line(screen, (204, 216, 211), (
-                w / 2 - tx * scale_factor + 25 * val * scale_factor - 5000 * scale_factor / 2,
-                h / 2 - ty * scale_factor - 5000 * scale_factor / 2),
-                             (w / 2 - tx * scale_factor + 25 * val * scale_factor - 5000 * scale_factor / 2,
-                              h / 2 - ty * scale_factor + 5000 * scale_factor / 2), 2)
+                w / 2 - tx * scale_factor + 25 * val * scale_factor - orig_size * scale_factor / 2,
+                h / 2 - ty * scale_factor - orig_size * scale_factor / 2),
+                             (w / 2 - tx * scale_factor + 25 * val * scale_factor - orig_size * scale_factor / 2,
+                              h / 2 - ty * scale_factor + orig_size * scale_factor / 2), 2)
 
         screen.fill((121, 135, 130), pygame.Rect(0, 0, w, h / 2 - ty * scale_factor - size * scale_factor / 2))
         screen.fill((121, 135, 130), pygame.Rect(0, 0, w / 2 - tx * scale_factor - size * scale_factor / 2, h))
@@ -434,7 +435,7 @@ while run:
             ptime = 0
             use_power = [False, 0]
             name = ''
-            size = 5000
+            size = orig_size
             unscale = True
             scale_factor = 1
             sin, cos = 0, 0
