@@ -198,7 +198,7 @@ while run:
             if use_power[0] and power == 'rapid':
                 gap = 1
             elif use_power[0] and power == 'sniper':
-                gap = 4
+                gap = 3.2
             if pygame.mouse.get_pressed(3)[0] and since > gap:
                 darts.append(
                     [[tx - 20 * cos, ty + 20 * sin], (255,),
@@ -253,8 +253,8 @@ while run:
                 darts[d][0][0] += 3.6 * ((mx + tx - w / 2) - darts[d][0][0]) / hp
                 darts[d][0][1] -= -3.6 * ((my + ty - h / 2) - darts[d][0][1]) / hp
             else:
-                darts[d][0][0] += math.cos(darts[d][2]) * (3.6 + 1.6 * darts[d][4])
-                darts[d][0][1] -= math.sin(darts[d][2]) * (3.6 + 1.6 * darts[d][4])
+                darts[d][0][0] += math.cos(darts[d][2]) * (3.6 + 2 * darts[d][4])
+                darts[d][0][1] -= math.sin(darts[d][2]) * (3.6 + 2 * darts[d][4])
         newdarts = []
         for d in darts:
             if d[1][0] >= 30 and (
