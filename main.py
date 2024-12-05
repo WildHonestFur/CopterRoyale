@@ -100,6 +100,7 @@ def listen():
             scount = 900
             gamedata = []
             darts = []
+            messages = []
         elif info[:1] == 'M':
             messages.append([info[1:], 200])
 
