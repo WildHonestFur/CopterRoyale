@@ -1,6 +1,7 @@
 import socket
 import zlib
 from threading import Thread
+import random
 
 HOST_IP = "192.168.15.167"
 HOST_PORT = 1234
