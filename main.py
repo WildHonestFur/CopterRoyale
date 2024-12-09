@@ -59,6 +59,7 @@ scount = 0
 scale_factor = 1
 sin, cos = 0, 0
 unscale = True
+team = []
 
 gamedata = []
 
@@ -81,7 +82,7 @@ def fix(s):
 
 
 def listen():
-    global state, end, place, gamedata, started, darts, scount, messages
+    global state, end, place, gamedata, started, darts, scount, messages, team, color
     while run:
         info, address = sock.recvfrom(4096)
         info = zlib.decompress(info)
@@ -95,15 +96,21 @@ def listen():
             time.sleep(1)
         elif info[:4] == 'DATA':
             gamedata = fix(info[4:])
-        elif info == 'START' and state == 'wait':
+        elif info[:5] == 'START' and state == 'wait':
             state = 'game'
             started = 0
             scount = 900
             gamedata = []
             darts = []
             messages = []
+            if info[5:] == 'FFA':
+                team = []
+                color = colors[code]
         elif info[:1] == 'M':
             messages.append([info[1:], 200])
+        elif info[:4] == 'TEAM':
+            color = colors[int(info[4])]
+            team = list(info[5:])
 
 
 def draw_rectangle(s, x, y, width, height, c, t_x, t_y, rotation):
@@ -308,10 +315,10 @@ while run:
                                    5 * scale_factor)
 
         for p in gamedata:
-            if math.dist((tx, ty), p[1]) < 30:
+            if math.dist((tx, ty), p[1]) < 30 and p[-1] not in team:
                 sock.sendto(bytes(f'DEATH{p[0]}+{p[6]}={name}+{code}=crash', 'utf-8'), (HOST_IP, HOST_PORT))
             for d in p[5]:
-                if math.dist(d[0], (tx, ty)) < 20:
+                if math.dist(d[0], (tx, ty)) < 20 and p[-1] not in team:
                     sock.sendto(bytes(f'DEATH{p[0]}+{p[6]}={name}+{code}=kill', 'utf-8'), (HOST_IP, HOST_PORT))
 
         pygame.draw.circle(screen, color * (not invis) + color2 * invis, (w / 2, h / 2), 15 * scale_factor)
