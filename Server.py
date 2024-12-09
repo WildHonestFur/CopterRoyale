@@ -15,14 +15,16 @@ dead = []
 num = {1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth',
        10: 'tenth'}
 prev = []
+mode = 'FFA'
 started = False
 
 
 def start():
     while True:
         if input('Command: ') == 'START':
+            mode = input('Mode: ')
             for pl in players:
-                ts = 'START'.encode('utf-8')
+                ts = f'START{mode}'.encode('utf-8')
                 ts = zlib.compress(ts)
                 sock.sendto(ts, players[pl])
 
@@ -89,6 +91,19 @@ while True:
         started = True
         prev = []
         left = len(info)
+        players = [i[-1] for i in info]
+        if mode == 'TEAM':
+            team1 = random.sample(players, int(left/2))
+            team2 = list(set(players).difference(set(players)))
+            for p1 in team1:
+                s = f'TEAM1{team1}'.encode('utf-8')
+                s = zlib.compress(s)
+                sock.sendto(s, players[p1])
+            for p2 in team2:
+                s = f'TEAM2{team1}'.encode('utf-8')
+                s = zlib.compress(s)
+                sock.sendto(s, players[p2])
+                
     else:
         stuff = eval(data)
         new_info = [stuff]
